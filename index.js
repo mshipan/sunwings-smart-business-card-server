@@ -38,6 +38,10 @@ async function run() {
     const logoCollection = client
       .db("sunwings-smart-business-card")
       .collection("logo");
+
+    const bannerCollection = client
+      .db("sunwings-smart-business-card")
+      .collection("banner");
     //collection end
 
     //APIs Start
@@ -67,6 +71,33 @@ async function run() {
       res.send(result);
     });
     // logo Apis End
+
+    // Banner Apis Start
+    app.get("/banner", async (req, res) => {
+      const result = await bannerCollection.find().toArray();
+      res.send(result);
+    });
+
+    app.post("/banner", async (req, res) => {
+      const newBanner = req.body;
+      const result = await bannerCollection.insertOne(newBanner);
+      res.send(result);
+    });
+
+    app.patch("/banner/:id", async (req, res) => {
+      const id = req.params.id;
+      const { banner } = req.body;
+      const filter = { _id: new ObjectId(id) };
+      const updateBanner = {
+        $set: {
+          banner: banner,
+        },
+      };
+      const result = await bannerCollection.updateOne(filter, updateBanner);
+      res.send(result);
+    });
+    // Banner Apis End
+
     //APIs End
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
