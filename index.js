@@ -9,6 +9,7 @@ const port = process.env.PORT || 5000;
 const logoApi = require("./apis/logoApi");
 const bannerApi = require("./apis/bannerApi");
 const visitingInformationApi = require("./apis/visitingInformationApi");
+const standardCardImageApi = require("./apis/standardCardImageApi");
 
 const corsConfig = {
   origin: "*",
@@ -51,6 +52,10 @@ async function run() {
     const visitingInformationCollection = client
       .db("sunwings-smart-business-card")
       .collection("visiting-information");
+
+    const standardCardImageCollection = client
+      .db("sunwings-smart-business-card")
+      .collection("standard-card-image");
     //collection end
 
     //APIs Start
@@ -60,6 +65,10 @@ async function run() {
     app.use(
       "/visiting-information",
       visitingInformationApi(visitingInformationCollection)
+    );
+    app.use(
+      "/stanndard-card-image",
+      standardCardImageApi(standardCardImageCollection)
     );
     //APIs End
 
