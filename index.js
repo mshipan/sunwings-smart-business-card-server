@@ -5,6 +5,11 @@ const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
 const port = process.env.PORT || 5000;
 
+// Import the logo and banner API modules
+const logoApi = require("./apis/logoApi");
+const bannerApi = require("./apis/bannerApi");
+const visitingInformationApi = require("./apis/visitingInformationApi");
+
 const corsConfig = {
   origin: "*",
   credentials: true,
@@ -42,63 +47,22 @@ async function run() {
     const bannerCollection = client
       .db("sunwings-smart-business-card")
       .collection("banner");
+
+    const visitingInformationCollection = client
+      .db("sunwings-smart-business-card")
+      .collection("visiting-information");
     //collection end
 
     //APIs Start
-
-    // logo Apis Start
-    app.get("/logo", async (req, res) => {
-      const result = await logoCollection.find().toArray();
-      res.send(result);
-    });
-
-    app.post("/logo", async (req, res) => {
-      const newLogo = req.body;
-      const result = await logoCollection.insertOne(newLogo);
-      res.send(result);
-    });
-
-    app.patch("/logo/:id", async (req, res) => {
-      const id = req.params.id;
-      const { logo } = req.body;
-      const filter = { _id: new ObjectId(id) };
-      const updateLogo = {
-        $set: {
-          logo: logo,
-        },
-      };
-      const result = await logoCollection.updateOne(filter, updateLogo);
-      res.send(result);
-    });
-    // logo Apis End
-
-    // Banner Apis Start
-    app.get("/banner", async (req, res) => {
-      const result = await bannerCollection.find().toArray();
-      res.send(result);
-    });
-
-    app.post("/banner", async (req, res) => {
-      const newBanner = req.body;
-      const result = await bannerCollection.insertOne(newBanner);
-      res.send(result);
-    });
-
-    app.patch("/banner/:id", async (req, res) => {
-      const id = req.params.id;
-      const { banner } = req.body;
-      const filter = { _id: new ObjectId(id) };
-      const updateBanner = {
-        $set: {
-          banner: banner,
-        },
-      };
-      const result = await bannerCollection.updateOne(filter, updateBanner);
-      res.send(result);
-    });
-    // Banner Apis End
-
+    // Using the API modules as middleware
+    app.use("/logo", logoApi(logoCollection));
+    app.use("/banner", bannerApi(bannerCollection));
+    app.use(
+      "/visiting-information",
+      visitingInformationApi(visitingInformationCollection)
+    );
     //APIs End
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
