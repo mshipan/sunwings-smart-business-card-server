@@ -10,6 +10,7 @@ const logoApi = require("./apis/logoApi");
 const bannerApi = require("./apis/bannerApi");
 const visitingInformationApi = require("./apis/visitingInformationApi");
 const standardCardImageApi = require("./apis/standardCardImageApi");
+const premiumCardImageApi = require("./apis/premiumCardImageApi");
 
 const corsConfig = {
   origin: "*",
@@ -56,6 +57,10 @@ async function run() {
     const standardCardImageCollection = client
       .db("sunwings-smart-business-card")
       .collection("standard-card-image");
+
+    const premiumCardImageCollection = client
+      .db("sunwings-smart-business-card")
+      .collection("premium-card-image");
     //collection end
 
     //APIs Start
@@ -69,6 +74,10 @@ async function run() {
     app.use(
       "/stanndard-card-image",
       standardCardImageApi(standardCardImageCollection)
+    );
+    app.use(
+      "/premium-card-image",
+      premiumCardImageApi(premiumCardImageCollection)
     );
     //APIs End
 
