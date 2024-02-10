@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const app = express();
-const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
+const { MongoClient, ServerApiVersion } = require("mongodb");
 require("dotenv").config();
 const port = process.env.PORT || 5000;
 
@@ -11,6 +11,7 @@ const bannerApi = require("./apis/bannerApi");
 const visitingInformationApi = require("./apis/visitingInformationApi");
 const standardCardImageApi = require("./apis/standardCardImageApi");
 const premiumCardImageApi = require("./apis/premiumCardImageApi");
+const usersApi = require("./apis/usersApi");
 
 const corsConfig = {
   origin: "*",
@@ -61,6 +62,10 @@ async function run() {
     const premiumCardImageCollection = client
       .db("sunwings-smart-business-card")
       .collection("premium-card-image");
+
+    const usersCollection = client
+      .db("sunwings-smart-business-card")
+      .collection("users");
     //collection end
 
     //APIs Start
@@ -79,6 +84,8 @@ async function run() {
       "/premium-card-image",
       premiumCardImageApi(premiumCardImageCollection)
     );
+
+    app.use("/users", usersApi(usersCollection));
     //APIs End
 
     // Send a ping to confirm a successful connection
