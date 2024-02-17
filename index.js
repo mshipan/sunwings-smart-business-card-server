@@ -11,7 +11,7 @@ const bannerApi = require("./apis/bannerApi");
 const visitingInformationApi = require("./apis/visitingInformationApi");
 const standardCardImageApi = require("./apis/standardCardImageApi");
 const premiumCardImageApi = require("./apis/premiumCardImageApi");
-const usersApi = require("./apis/usersApi");
+const usersApi = require("./apis/usersApi/usersApi");
 
 const corsConfig = {
   origin: "*",
