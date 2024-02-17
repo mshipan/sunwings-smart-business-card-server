@@ -12,6 +12,7 @@ const visitingInformationApi = require("./apis/visitingInformationApi");
 const standardCardImageApi = require("./apis/standardCardImageApi");
 const premiumCardImageApi = require("./apis/premiumCardImageApi");
 const usersApi = require("./apis/usersApi/usersApi");
+const educationApi = require("./apis/usersApi/educationApi");
 
 const corsConfig = {
   origin: "*",
@@ -66,6 +67,10 @@ async function run() {
     const usersCollection = client
       .db("sunwings-smart-business-card")
       .collection("users");
+
+    const educationsCollection = client
+      .db("sunwings-smart-business-card")
+      .collection("educations");
     //collection end
 
     //APIs Start
@@ -86,6 +91,7 @@ async function run() {
     );
 
     app.use("/users", usersApi(usersCollection));
+    app.use("/educations", educationApi(educationsCollection));
     //APIs End
 
     // Send a ping to confirm a successful connection

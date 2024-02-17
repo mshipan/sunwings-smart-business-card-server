@@ -103,6 +103,25 @@ const usersApi = (usersCollection) => {
     res.send(result);
   });
 
+  userRouter.get("/:uid/education-info", async (req, res) => {
+    const uid = req.params.uid;
+    const pipeline = [
+      {
+        $match: { uid: uid },
+      },
+      {
+        $lookup: {
+          from: "education",
+          localField: "uid",
+          foreignField: "uid",
+          as: "educationData",
+        },
+      },
+    ];
+    const result = await usersCollection.aggregate(pipeline).toArray();
+    res.send(result);
+  });
+
   return userRouter;
 };
 
