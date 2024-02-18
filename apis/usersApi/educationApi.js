@@ -1,4 +1,5 @@
 const express = require("express");
+const { ObjectId } = require("mongodb");
 
 const educationApi = (educationCollection) => {
   const educationRouter = express.Router();
@@ -13,9 +14,10 @@ const educationApi = (educationCollection) => {
     res.send(result);
   });
 
-  educationRouter.delete("/:uid", async (req, res) => {
-    const uid = req.params.uid;
-    const query = { uid: uid };
+  educationRouter.delete("/:id", async (req, res) => {
+    const id = req.params.id;
+    const query = { _id: new ObjectId(id) };
+    // { uid: uid };
     const result = await educationCollection.deleteOne(query);
     res.send(result);
   });
