@@ -9,9 +9,9 @@ const usersApi = (usersCollection) => {
     res.send(result);
   });
 
-  userRouter.get("/:id", async (req, res) => {
-    const id = req.params.id;
-    const query = { _id: new ObjectId(id) };
+  userRouter.get("/:uid", async (req, res) => {
+    const uid = req.params.uid;
+    const query = { uid: uid };
     const result = await usersCollection.findOne(query);
     res.send(result);
   });
