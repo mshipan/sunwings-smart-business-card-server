@@ -14,6 +14,14 @@ const premiumCardImageApi = require("./apis/premiumCardImageApi");
 const usersApi = require("./apis/usersApi/usersApi");
 const educationApi = require("./apis/usersApi/educationApi");
 const jobExperienceApi = require("./apis/usersApi/jobExperienceApi");
+const facebookApi = require("./apis/socialMediaApi/facebookApi");
+const twitterApi = require("./apis/socialMediaApi/twitterApi");
+const instagramApi = require("./apis/socialMediaApi/instagramApi");
+const whatsAppApi = require("./apis/socialMediaApi/whatsAppApi");
+const linkedInApi = require("./apis/socialMediaApi/linkedInApi");
+const youTubeApi = require("./apis/socialMediaApi/youTubeApi");
+const tiktokApi = require("./apis/socialMediaApi/tiktokApi");
+const snapChat = require("./apis/socialMediaApi/snapChatApi");
 
 const corsConfig = {
   origin: "*",
@@ -76,6 +84,38 @@ async function run() {
     const jobExperienceCollection = client
       .db("sunwings-smart-business-card")
       .collection("job-experiences");
+
+    const facebookCollection = client
+      .db("sunwings-smart-business-card")
+      .collection("facebook-links");
+
+    const twitterCollection = client
+      .db("sunwings-smart-business-card")
+      .collection("twitter-links");
+
+    const instagramCollection = client
+      .db("sunwings-smart-business-card")
+      .collection("instagram-links");
+
+    const whatsAppCollection = client
+      .db("sunwings-smart-business-card")
+      .collection("whatsApp-links");
+
+    const linkedInCollection = client
+      .db("sunwings-smart-business-card")
+      .collection("linkedIn-links");
+
+    const youTubeCollection = client
+      .db("sunwings-smart-business-card")
+      .collection("youtube-links");
+
+    const tiktokCollection = client
+      .db("sunwings-smart-business-card")
+      .collection("tiktok-links");
+
+    const snapChatCollection = client
+      .db("sunwings-smart-business-card")
+      .collection("snapchat-links");
     //collection end
 
     //APIs Start
@@ -98,6 +138,14 @@ async function run() {
     app.use("/users", usersApi(usersCollection));
     app.use("/educations", educationApi(educationsCollection));
     app.use("/job-experiences", jobExperienceApi(jobExperienceCollection));
+    app.use("/facebook", facebookApi(facebookCollection));
+    app.use("/twitter", twitterApi(twitterCollection));
+    app.use("/instagram", instagramApi(instagramCollection));
+    app.use("/whatsapp", whatsAppApi(whatsAppCollection));
+    app.use("/linkedin", linkedInApi(linkedInCollection));
+    app.use("/youtube", youTubeApi(youTubeCollection));
+    app.use("/tiktok", tiktokApi(tiktokCollection));
+    app.use("/snapchat", snapChat(snapChatCollection));
     //APIs End
 
     // Send a ping to confirm a successful connection

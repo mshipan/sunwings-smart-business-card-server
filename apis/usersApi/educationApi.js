@@ -17,7 +17,6 @@ const educationApi = (educationCollection) => {
   educationRouter.delete("/:id", async (req, res) => {
     const id = req.params.id;
     const query = { _id: new ObjectId(id) };
-    // { uid: uid };
     const result = await educationCollection.deleteOne(query);
     res.send(result);
   });
