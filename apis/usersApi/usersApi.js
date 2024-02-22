@@ -27,6 +27,14 @@ const usersApi = (usersCollection) => {
       alternateEmail: "",
       presentAddress: userData.address || null,
       permanentAddress: "",
+      qrCode: [
+        {
+          qrCode: "",
+          bgColor: "",
+          fbColor: "",
+        },
+      ],
+      facebook: [],
       ...userData,
     };
     const result = await usersCollection.insertOne(newUser);
@@ -48,6 +56,7 @@ const usersApi = (usersCollection) => {
     );
     res.send(result);
   });
+
   userRouter.patch("/:uid/profile-cover", async (req, res) => {
     const uid = req.params.uid;
     const { profileCover } = req.body;
@@ -71,6 +80,23 @@ const usersApi = (usersCollection) => {
       },
     };
     const result = await usersCollection.updateOne(filter, updateAboutMe);
+    res.send(result);
+  });
+
+  userRouter.patch("/:uid/qr-code", async (req, res) => {
+    const uid = req.params.uid;
+    const { qrCode, bgColor, fgColor } = req.body;
+    const filter = { uid: uid };
+    const updateQrCode = {
+      $set: {
+        qrCode: {
+          qrCode: qrCode,
+          bgColor: bgColor,
+          fgColor: fgColor,
+        },
+      },
+    };
+    const result = await usersCollection.updateOne(filter, updateQrCode);
     res.send(result);
   });
 
@@ -120,6 +146,46 @@ const usersApi = (usersCollection) => {
     ];
     const result = await usersCollection.aggregate(pipeline).toArray();
     res.send(result);
+  });
+
+  userRouter.post("/:uid/facebook", async (req, res) => {
+    const uid = req.params.uid;
+    const newFacebook = req.body;
+    const filter = { uid: uid };
+    const updateFacebook = {
+      $push: {
+        facebook: {
+          _id: new ObjectId(),
+          facebook: newFacebook,
+        },
+      },
+    };
+    try {
+      const result = await usersCollection.updateOne(filter, updateFacebook);
+      res.send(result);
+    } catch (error) {
+      res.status(500).send({ error: "Failed to update Facebook links." });
+    }
+  });
+
+  userRouter.delete("/:uid/facebook/:id", async (req, res) => {
+    const uid = req.params.uid;
+    const id = req.params.id;
+
+    try {
+      const filter = { uid: uid, "facebook._id": new ObjectId(id) };
+      const update = { $pull: { facebook: { _id: new ObjectId(id) } } };
+      const result = await usersCollection.updateOne(filter, update);
+
+      if (result.modifiedCount > 0) {
+        res.send({ message: "Facebook link deleted successfully" });
+      } else {
+        res.status(404).send({ error: "Facebook link not found" });
+      }
+    } catch (error) {
+      console.error("Error deleting Facebook link", error);
+      res.status(500).send({ error: "Internal server error" });
+    }
   });
 
   return userRouter;

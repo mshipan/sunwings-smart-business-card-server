@@ -5,9 +5,20 @@ const linkedInApi = (linkedInCollection) => {
   const linkedInRouter = express.Router();
 
   linkedInRouter.get("/", async (req, res) => {
-    const result = await linkedInCollection.find().toArray();
-    res.send(result);
+    try {
+      const result = await linkedInCollection
+        .aggregate([
+          // Match documents where 'facebook' array is not empty
+          { $match: { "linkedin.0": { $exists: true } } },
+        ])
+        .toArray();
+      res.send(result);
+    } catch (error) {
+      console.error("Error fetching LinkedIn links:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
   });
+
   linkedInRouter.post("/", async (req, res) => {
     const newLinkedIn = req.body;
     const result = await linkedInCollection.insertOne(newLinkedIn);

@@ -5,14 +5,26 @@ const facebookApi = (facebookCollection) => {
   const facebookRouter = express.Router();
 
   facebookRouter.get("/", async (req, res) => {
-    const result = await facebookCollection.find().toArray();
-    res.send(result);
+    try {
+      const result = await facebookCollection
+        .aggregate([
+          // Match documents where 'facebook' array is not empty
+          { $match: { "facebook.0": { $exists: true } } },
+        ])
+        .toArray();
+      res.send(result);
+    } catch (error) {
+      console.error("Error fetching Facebook links:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
   });
-  facebookRouter.post("/", async (req, res) => {
-    const newFacebook = req.body;
-    const result = await facebookCollection.insertOne(newFacebook);
-    res.send(result);
-  });
+
+  // facebookRouter.post("/", async (req, res) => {
+  //   const newFacebook = req.body;
+  //   console.log(newFacebook);
+  //   const result = await facebookCollection.insertOne(newFacebook);
+  //   res.send(result);
+  // });
 
   facebookRouter.delete("/:id/:index", async (req, res) => {
     const id = req.params.id;

@@ -5,9 +5,20 @@ const twitterApi = (twitterCollection) => {
   const twitterRouter = express.Router();
 
   twitterRouter.get("/", async (req, res) => {
-    const result = await twitterCollection.find().toArray();
-    res.send(result);
+    try {
+      const result = await twitterCollection
+        .aggregate([
+          // Match documents where 'facebook' array is not empty
+          { $match: { "twitter.0": { $exists: true } } },
+        ])
+        .toArray();
+      res.send(result);
+    } catch (error) {
+      console.error("Error fetching Twitter links:", error);
+      res.status(500).json({ message: "Internal server error" });
+    }
   });
+
   twitterRouter.post("/", async (req, res) => {
     const newTwitter = req.body;
     const result = await twitterCollection.insertOne(newTwitter);

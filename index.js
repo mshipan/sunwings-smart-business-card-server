@@ -143,7 +143,7 @@ async function run() {
     app.use("/users", usersApi(usersCollection));
     app.use("/educations", educationApi(educationsCollection));
     app.use("/job-experiences", jobExperienceApi(jobExperienceCollection));
-    app.use("/facebook", facebookApi(facebookCollection));
+
     app.use("/twitter", twitterApi(twitterCollection));
     app.use("/instagram", instagramApi(instagramCollection));
     app.use("/whatsapp", whatsAppApi(whatsAppCollection));
