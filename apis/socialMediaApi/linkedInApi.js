@@ -1,51 +1,49 @@
 const express = require("express");
 const { ObjectId } = require("mongodb");
 
-const linkedInApi = (linkedInCollection) => {
+const linkedInApi = (usersCollection) => {
   const linkedInRouter = express.Router();
 
-  linkedInRouter.get("/", async (req, res) => {
+  linkedInRouter.post("/:uid/linkedin", async (req, res) => {
+    const uid = req.params.uid;
+    const newLinkedin = req.body;
+    const filter = { uid: uid };
+    const updateLinkedin = {
+      $push: {
+        linkedin: {
+          _id: new ObjectId(),
+          linkedin: newLinkedin,
+        },
+      },
+    };
     try {
-      const result = await linkedInCollection
-        .aggregate([
-          // Match documents where 'facebook' array is not empty
-          { $match: { "linkedin.0": { $exists: true } } },
-        ])
-        .toArray();
+      const result = await usersCollection.updateOne(filter, updateLinkedin);
       res.send(result);
     } catch (error) {
-      console.error("Error fetching LinkedIn links:", error);
-      res.status(500).json({ message: "Internal server error" });
+      res.status(500).send({ error: "Failed to update LinkedIn links." });
     }
   });
 
-  linkedInRouter.post("/", async (req, res) => {
-    const newLinkedIn = req.body;
-    const result = await linkedInCollection.insertOne(newLinkedIn);
-    res.send(result);
-  });
-
-  linkedInRouter.delete("/:id/:index", async (req, res) => {
+  linkedInRouter.delete("/:uid/linkedin/:id", async (req, res) => {
+    const uid = req.params.uid;
     const id = req.params.id;
-    const index = parseInt(req.params.index); // Parse index as integer
-    const query = { _id: new ObjectId(id) };
 
     try {
-      const document = await linkedInCollection.findOne(query);
-      if (!document) {
-        return res.status(404).json({ message: "Document not found" });
+      const filter = { uid: uid, "linkedin._id": new ObjectId(id) };
+      const update = { $pull: { linkedin: { _id: new ObjectId(id) } } };
+      const result = await usersCollection.updateOne(filter, update);
+
+      if (result.modifiedCount > 0) {
+        res.send({ message: "Linkedin link deleted successfully" });
+      } else {
+        res.status(404).send({ error: "linkedin link not found" });
       }
-
-      // Remove the element at the specified index from the 'facebook' array
-      document.linkedin.splice(index, 1);
-
-      const result = await linkedInCollection.replaceOne(query, document);
-      res.send(result);
     } catch (error) {
-      console.error("Error deleting linkedIn link:", error);
-      res.status(500).json({ message: "Internal server error" });
+      console.error("Error deleting linkedin link", error);
+      res.status(500).send({ error: "Internal server error" });
     }
   });
+
   return linkedInRouter;
 };
 

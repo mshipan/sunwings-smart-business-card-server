@@ -1,51 +1,49 @@
 const express = require("express");
 const { ObjectId } = require("mongodb");
 
-const twitterApi = (twitterCollection) => {
+const twitterApi = (usersCollection) => {
   const twitterRouter = express.Router();
 
-  twitterRouter.get("/", async (req, res) => {
-    try {
-      const result = await twitterCollection
-        .aggregate([
-          // Match documents where 'facebook' array is not empty
-          { $match: { "twitter.0": { $exists: true } } },
-        ])
-        .toArray();
-      res.send(result);
-    } catch (error) {
-      console.error("Error fetching Twitter links:", error);
-      res.status(500).json({ message: "Internal server error" });
-    }
-  });
-
-  twitterRouter.post("/", async (req, res) => {
+  twitterRouter.post("/:uid/twitter", async (req, res) => {
+    const uid = req.params.uid;
     const newTwitter = req.body;
-    const result = await twitterCollection.insertOne(newTwitter);
-    res.send(result);
-  });
-
-  twitterRouter.delete("/:id/:index", async (req, res) => {
-    const id = req.params.id;
-    const index = parseInt(req.params.index); // Parse index as integer
-    const query = { _id: new ObjectId(id) };
-
+    const filter = { uid: uid };
+    const updateTwitter = {
+      $push: {
+        twitter: {
+          _id: new ObjectId(),
+          twitter: newTwitter,
+        },
+      },
+    };
     try {
-      const document = await twitterCollection.findOne(query);
-      if (!document) {
-        return res.status(404).json({ message: "Document not found" });
-      }
-
-      // Remove the element at the specified index from the 'facebook' array
-      document.twitter.splice(index, 1);
-
-      const result = await twitterCollection.replaceOne(query, document);
+      const result = await usersCollection.updateOne(filter, updateTwitter);
       res.send(result);
     } catch (error) {
-      console.error("Error deleting Twitter link:", error);
-      res.status(500).json({ message: "Internal server error" });
+      res.status(500).send({ error: "Failed to update twitter links." });
     }
   });
+
+  twitterRouter.delete("/:uid/twitter/:id", async (req, res) => {
+    const uid = req.params.uid;
+    const id = req.params.id;
+
+    try {
+      const filter = { uid: uid, "twitter._id": new ObjectId(id) };
+      const update = { $pull: { twitter: { _id: new ObjectId(id) } } };
+      const result = await usersCollection.updateOne(filter, update);
+
+      if (result.modifiedCount > 0) {
+        res.send({ message: "Twitter link deleted successfully" });
+      } else {
+        res.status(404).send({ error: "twitter link not found" });
+      }
+    } catch (error) {
+      console.error("Error deleting twitter link", error);
+      res.status(500).send({ error: "Internal server error" });
+    }
+  });
+
   return twitterRouter;
 };
 

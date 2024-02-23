@@ -1,40 +1,49 @@
 const express = require("express");
 const { ObjectId } = require("mongodb");
 
-const snapChatApi = (snapChatCollection) => {
+const snapChatApi = (usersCollection) => {
   const snapChatRouter = express.Router();
 
-  snapChatRouter.get("/", async (req, res) => {
-    const result = await snapChatCollection.find().toArray();
-    res.send(result);
-  });
-  snapChatRouter.post("/", async (req, res) => {
-    const newSnapChat = req.body;
-    const result = await snapChatCollection.insertOne(newSnapChat);
-    res.send(result);
-  });
-
-  snapChatRouter.delete("/:id/:index", async (req, res) => {
-    const id = req.params.id;
-    const index = parseInt(req.params.index); // Parse index as integer
-    const query = { _id: new ObjectId(id) };
-
+  snapChatRouter.post("/:uid/snapchat", async (req, res) => {
+    const uid = req.params.uid;
+    const newSnapchat = req.body;
+    const filter = { uid: uid };
+    const updateSnapchat = {
+      $push: {
+        snapchat: {
+          _id: new ObjectId(),
+          snapchat: newSnapchat,
+        },
+      },
+    };
     try {
-      const document = await snapChatCollection.findOne(query);
-      if (!document) {
-        return res.status(404).json({ message: "Document not found" });
-      }
-
-      // Remove the element at the specified index from the 'facebook' array
-      document.snapchat.splice(index, 1);
-
-      const result = await snapChatCollection.replaceOne(query, document);
+      const result = await usersCollection.updateOne(filter, updateSnapchat);
       res.send(result);
     } catch (error) {
-      console.error("Error deleting snapChat link:", error);
-      res.status(500).json({ message: "Internal server error" });
+      res.status(500).send({ error: "Failed to update snapchat links." });
     }
   });
+
+  snapChatRouter.delete("/:uid/snapchat/:id", async (req, res) => {
+    const uid = req.params.uid;
+    const id = req.params.id;
+
+    try {
+      const filter = { uid: uid, "snapchat._id": new ObjectId(id) };
+      const update = { $pull: { snapchat: { _id: new ObjectId(id) } } };
+      const result = await usersCollection.updateOne(filter, update);
+
+      if (result.modifiedCount > 0) {
+        res.send({ message: "Snapchat link deleted successfully" });
+      } else {
+        res.status(404).send({ error: "snapchat link not found" });
+      }
+    } catch (error) {
+      console.error("Error deleting snapchat link", error);
+      res.status(500).send({ error: "Internal server error" });
+    }
+  });
+
   return snapChatRouter;
 };
 

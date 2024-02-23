@@ -1,40 +1,49 @@
 const express = require("express");
 const { ObjectId } = require("mongodb");
 
-const youTubeApi = (youTubeCollection) => {
+const youTubeApi = (usersCollection) => {
   const youTubeRouter = express.Router();
 
-  youTubeRouter.get("/", async (req, res) => {
-    const result = await youTubeCollection.find().toArray();
-    res.send(result);
-  });
-  youTubeRouter.post("/", async (req, res) => {
-    const newYouTube = req.body;
-    const result = await youTubeCollection.insertOne(newYouTube);
-    res.send(result);
-  });
-
-  youTubeRouter.delete("/:id/:index", async (req, res) => {
-    const id = req.params.id;
-    const index = parseInt(req.params.index); // Parse index as integer
-    const query = { _id: new ObjectId(id) };
-
+  youTubeRouter.post("/:uid/youtube", async (req, res) => {
+    const uid = req.params.uid;
+    const newYoutube = req.body;
+    const filter = { uid: uid };
+    const updateYoutube = {
+      $push: {
+        youtube: {
+          _id: new ObjectId(),
+          youtube: newYoutube,
+        },
+      },
+    };
     try {
-      const document = await youTubeCollection.findOne(query);
-      if (!document) {
-        return res.status(404).json({ message: "Document not found" });
-      }
-
-      // Remove the element at the specified index from the 'facebook' array
-      document.youtube.splice(index, 1);
-
-      const result = await youTubeCollection.replaceOne(query, document);
+      const result = await usersCollection.updateOne(filter, updateYoutube);
       res.send(result);
     } catch (error) {
-      console.error("Error deleting youTube link:", error);
-      res.status(500).json({ message: "Internal server error" });
+      res.status(500).send({ error: "Failed to update Youtube links." });
     }
   });
+
+  youTubeRouter.delete("/:uid/youtube/:id", async (req, res) => {
+    const uid = req.params.uid;
+    const id = req.params.id;
+
+    try {
+      const filter = { uid: uid, "youtube._id": new ObjectId(id) };
+      const update = { $pull: { youtube: { _id: new ObjectId(id) } } };
+      const result = await usersCollection.updateOne(filter, update);
+
+      if (result.modifiedCount > 0) {
+        res.send({ message: "Youtube link deleted successfully" });
+      } else {
+        res.status(404).send({ error: "youtube link not found" });
+      }
+    } catch (error) {
+      console.error("Error deleting youtube link", error);
+      res.status(500).send({ error: "Internal server error" });
+    }
+  });
+
   return youTubeRouter;
 };
 

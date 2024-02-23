@@ -86,41 +86,6 @@ async function run() {
       .db("sunwings-smart-business-card")
       .collection("job-experiences");
 
-    const facebookCollection = client
-      .db("sunwings-smart-business-card")
-      .collection("facebook-links");
-
-    const twitterCollection = client
-      .db("sunwings-smart-business-card")
-      .collection("twitter-links");
-
-    const instagramCollection = client
-      .db("sunwings-smart-business-card")
-      .collection("instagram-links");
-
-    const whatsAppCollection = client
-      .db("sunwings-smart-business-card")
-      .collection("whatsApp-links");
-
-    const linkedInCollection = client
-      .db("sunwings-smart-business-card")
-      .collection("linkedIn-links");
-
-    const youTubeCollection = client
-      .db("sunwings-smart-business-card")
-      .collection("youtube-links");
-
-    const tiktokCollection = client
-      .db("sunwings-smart-business-card")
-      .collection("tiktok-links");
-
-    const snapChatCollection = client
-      .db("sunwings-smart-business-card")
-      .collection("snapchat-links");
-
-    const personalWebsiteCollection = client
-      .db("sunwings-smart-business-card")
-      .collection("personal-website-links");
     //collection end
 
     //APIs Start
@@ -143,18 +108,15 @@ async function run() {
     app.use("/users", usersApi(usersCollection));
     app.use("/educations", educationApi(educationsCollection));
     app.use("/job-experiences", jobExperienceApi(jobExperienceCollection));
-
-    app.use("/twitter", twitterApi(twitterCollection));
-    app.use("/instagram", instagramApi(instagramCollection));
-    app.use("/whatsapp", whatsAppApi(whatsAppCollection));
-    app.use("/linkedin", linkedInApi(linkedInCollection));
-    app.use("/youtube", youTubeApi(youTubeCollection));
-    app.use("/tiktok", tiktokApi(tiktokCollection));
-    app.use("/snapchat", snapChatApi(snapChatCollection));
-    app.use(
-      "/personal-websites",
-      personalWebsiteApi(personalWebsiteCollection)
-    );
+    app.use("/users", facebookApi(usersCollection));
+    app.use("/users", twitterApi(usersCollection));
+    app.use("/users", instagramApi(usersCollection));
+    app.use("/users", whatsAppApi(usersCollection));
+    app.use("/users", linkedInApi(usersCollection));
+    app.use("/users", youTubeApi(usersCollection));
+    app.use("/users", tiktokApi(usersCollection));
+    app.use("/users", snapChatApi(usersCollection));
+    app.use("/users", personalWebsiteApi(usersCollection));
     //APIs End
 
     // Send a ping to confirm a successful connection

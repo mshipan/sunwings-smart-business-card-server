@@ -1,40 +1,49 @@
 const express = require("express");
 const { ObjectId } = require("mongodb");
 
-const tiktokApi = (tiktokCollection) => {
+const tiktokApi = (usersCollection) => {
   const tiktokRouter = express.Router();
 
-  tiktokRouter.get("/", async (req, res) => {
-    const result = await tiktokCollection.find().toArray();
-    res.send(result);
-  });
-  tiktokRouter.post("/", async (req, res) => {
+  tiktokRouter.post("/:uid/tiktok", async (req, res) => {
+    const uid = req.params.uid;
     const newTiktok = req.body;
-    const result = await tiktokCollection.insertOne(newTiktok);
-    res.send(result);
-  });
-
-  tiktokRouter.delete("/:id/:index", async (req, res) => {
-    const id = req.params.id;
-    const index = parseInt(req.params.index); // Parse index as integer
-    const query = { _id: new ObjectId(id) };
-
+    const filter = { uid: uid };
+    const updateTiktok = {
+      $push: {
+        tiktok: {
+          _id: new ObjectId(),
+          tiktok: newTiktok,
+        },
+      },
+    };
     try {
-      const document = await tiktokCollection.findOne(query);
-      if (!document) {
-        return res.status(404).json({ message: "Document not found" });
-      }
-
-      // Remove the element at the specified index from the 'facebook' array
-      document.tiktok.splice(index, 1);
-
-      const result = await tiktokCollection.replaceOne(query, document);
+      const result = await usersCollection.updateOne(filter, updateTiktok);
       res.send(result);
     } catch (error) {
-      console.error("Error deleting tiktok link:", error);
-      res.status(500).json({ message: "Internal server error" });
+      res.status(500).send({ error: "Failed to update tiktok links." });
     }
   });
+
+  tiktokRouter.delete("/:uid/tiktok/:id", async (req, res) => {
+    const uid = req.params.uid;
+    const id = req.params.id;
+
+    try {
+      const filter = { uid: uid, "tiktok._id": new ObjectId(id) };
+      const update = { $pull: { tiktok: { _id: new ObjectId(id) } } };
+      const result = await usersCollection.updateOne(filter, update);
+
+      if (result.modifiedCount > 0) {
+        res.send({ message: "Tiktok link deleted successfully" });
+      } else {
+        res.status(404).send({ error: "tiktok link not found" });
+      }
+    } catch (error) {
+      console.error("Error deleting tiktok link", error);
+      res.status(500).send({ error: "Internal server error" });
+    }
+  });
+
   return tiktokRouter;
 };
 

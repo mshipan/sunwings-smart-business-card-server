@@ -1,51 +1,49 @@
 const express = require("express");
 const { ObjectId } = require("mongodb");
 
-const whatsAppApi = (whatsAppCollection) => {
+const whatsAppApi = (usersCollection) => {
   const whatsAppRouter = express.Router();
 
-  whatsAppRouter.get("/", async (req, res) => {
-    try {
-      const result = await whatsAppCollection
-        .aggregate([
-          // Match documents where 'facebook' array is not empty
-          { $match: { "whatsapp.0": { $exists: true } } },
-        ])
-        .toArray();
-      res.send(result);
-    } catch (error) {
-      console.error("Error fetching WhatsApp links:", error);
-      res.status(500).json({ message: "Internal server error" });
-    }
-  });
-
-  whatsAppRouter.post("/", async (req, res) => {
+  whatsAppRouter.post("/:uid/whatsapp", async (req, res) => {
+    const uid = req.params.uid;
     const newWhatsApp = req.body;
-    const result = await whatsAppCollection.insertOne(newWhatsApp);
-    res.send(result);
-  });
-
-  whatsAppRouter.delete("/:id/:index", async (req, res) => {
-    const id = req.params.id;
-    const index = parseInt(req.params.index); // Parse index as integer
-    const query = { _id: new ObjectId(id) };
-
+    const filter = { uid: uid };
+    const updateWhatsApp = {
+      $push: {
+        whatsapp: {
+          _id: new ObjectId(),
+          whatsapp: newWhatsApp,
+        },
+      },
+    };
     try {
-      const document = await whatsAppCollection.findOne(query);
-      if (!document) {
-        return res.status(404).json({ message: "Document not found" });
-      }
-
-      // Remove the element at the specified index from the 'facebook' array
-      document.whatsApp.splice(index, 1);
-
-      const result = await whatsAppCollection.replaceOne(query, document);
+      const result = await usersCollection.updateOne(filter, updateWhatsApp);
       res.send(result);
     } catch (error) {
-      console.error("Error deleting whatsApp link:", error);
-      res.status(500).json({ message: "Internal server error" });
+      res.status(500).send({ error: "Failed to update whatsApp links." });
     }
   });
+
+  whatsAppRouter.delete("/:uid/whatsapp/:id", async (req, res) => {
+    const uid = req.params.uid;
+    const id = req.params.id;
+
+    try {
+      const filter = { uid: uid, "whatsapp._id": new ObjectId(id) };
+      const update = { $pull: { whatsapp: { _id: new ObjectId(id) } } };
+      const result = await usersCollection.updateOne(filter, update);
+
+      if (result.modifiedCount > 0) {
+        res.send({ message: "WhatsApp link deleted successfully" });
+      } else {
+        res.status(404).send({ error: "whatsApp link not found" });
+      }
+    } catch (error) {
+      console.error("Error deleting whatsApp link", error);
+      res.status(500).send({ error: "Internal server error" });
+    }
+  });
+
   return whatsAppRouter;
 };
 

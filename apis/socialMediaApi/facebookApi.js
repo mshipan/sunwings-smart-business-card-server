@@ -1,50 +1,46 @@
 const express = require("express");
 const { ObjectId } = require("mongodb");
 
-const facebookApi = (facebookCollection) => {
+const facebookApi = (usersCollection) => {
   const facebookRouter = express.Router();
 
-  facebookRouter.get("/", async (req, res) => {
+  facebookRouter.post("/:uid/facebook", async (req, res) => {
+    const uid = req.params.uid;
+    const newFacebook = req.body;
+    const filter = { uid: uid };
+    const updateFacebook = {
+      $push: {
+        facebook: {
+          _id: new ObjectId(),
+          facebook: newFacebook,
+        },
+      },
+    };
     try {
-      const result = await facebookCollection
-        .aggregate([
-          // Match documents where 'facebook' array is not empty
-          { $match: { "facebook.0": { $exists: true } } },
-        ])
-        .toArray();
+      const result = await usersCollection.updateOne(filter, updateFacebook);
       res.send(result);
     } catch (error) {
-      console.error("Error fetching Facebook links:", error);
-      res.status(500).json({ message: "Internal server error" });
+      res.status(500).send({ error: "Failed to update Facebook links." });
     }
   });
 
-  // facebookRouter.post("/", async (req, res) => {
-  //   const newFacebook = req.body;
-  //   console.log(newFacebook);
-  //   const result = await facebookCollection.insertOne(newFacebook);
-  //   res.send(result);
-  // });
-
-  facebookRouter.delete("/:id/:index", async (req, res) => {
+  facebookRouter.delete("/:uid/facebook/:id", async (req, res) => {
+    const uid = req.params.uid;
     const id = req.params.id;
-    const index = parseInt(req.params.index); // Parse index as integer
-    const query = { _id: new ObjectId(id) };
 
     try {
-      const document = await facebookCollection.findOne(query);
-      if (!document) {
-        return res.status(404).json({ message: "Document not found" });
+      const filter = { uid: uid, "facebook._id": new ObjectId(id) };
+      const update = { $pull: { facebook: { _id: new ObjectId(id) } } };
+      const result = await usersCollection.updateOne(filter, update);
+
+      if (result.modifiedCount > 0) {
+        res.send({ message: "Facebook link deleted successfully" });
+      } else {
+        res.status(404).send({ error: "Facebook link not found" });
       }
-
-      // Remove the element at the specified index from the 'facebook' array
-      document.facebook.splice(index, 1);
-
-      const result = await facebookCollection.replaceOne(query, document);
-      res.send(result);
     } catch (error) {
-      console.error("Error deleting Facebook link:", error);
-      res.status(500).json({ message: "Internal server error" });
+      console.error("Error deleting Facebook link", error);
+      res.status(500).send({ error: "Internal server error" });
     }
   });
 
