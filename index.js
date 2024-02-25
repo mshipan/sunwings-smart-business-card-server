@@ -106,8 +106,8 @@ async function run() {
     );
 
     app.use("/users", usersApi(usersCollection));
-    app.use("/educations", educationApi(educationsCollection));
-    app.use("/job-experiences", jobExperienceApi(jobExperienceCollection));
+    app.use("/users", educationApi(usersCollection));
+    app.use("/users", jobExperienceApi(usersCollection));
     app.use("/users", facebookApi(usersCollection));
     app.use("/users", twitterApi(usersCollection));
     app.use("/users", instagramApi(usersCollection));
