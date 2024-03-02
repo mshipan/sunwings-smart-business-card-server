@@ -5,7 +5,10 @@ const usersApi = (usersCollection) => {
   const userRouter = express.Router();
 
   userRouter.get("/", async (req, res) => {
-    const result = await usersCollection.find().toArray();
+    const result = await usersCollection
+      .find()
+      .sort({ createdAt: -1 })
+      .toArray();
     res.send(result);
   });
 
@@ -165,6 +168,19 @@ const usersApi = (usersCollection) => {
     const updateQrCode = {
       $set: {
         theme: theme,
+      },
+    };
+    const result = await usersCollection.updateOne(filter, updateQrCode);
+    res.send(result);
+  });
+
+  userRouter.patch("/:uid/role", async (req, res) => {
+    const uid = req.params.uid;
+    const { role } = req.body;
+    const filter = { _id: new ObjectId(uid) };
+    const updateQrCode = {
+      $set: {
+        role: role,
       },
     };
     const result = await usersCollection.updateOne(filter, updateQrCode);
