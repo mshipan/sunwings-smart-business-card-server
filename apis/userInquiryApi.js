@@ -1,0 +1,43 @@
+const express = require("express");
+const nodemailer = require("nodemailer");
+
+const userInquiryApi = (userInquiryCollection) => {
+  const userInquiryRouter = express.Router();
+
+  // Nodemailer setup
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    host: process.env.Nodemailer_Host,
+    port: process.env.Nodemailer_Port,
+    secure: false,
+    auth: {
+      user: process.env.Nodemailer_User,
+      pass: process.env.Nodemailer_Pass,
+    },
+  });
+
+  userInquiryRouter.post("/send-email", async (req, res) => {
+    const { name, email, subject, message } = req.body;
+
+    const mailOptions = {
+      from: email,
+      to: process.env.Nodemailer_User,
+      subject: subject,
+      text: `Name: ${name}\nEmail: ${email}\nMessage: ${message}`,
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        // console.error(error);
+        res.status(500).send("Error sending email");
+      } else {
+        // console.log("Email sent: " + info.response);
+        res.status(200).send("Email sent successfully");
+      }
+    });
+  });
+
+  return userInquiryRouter;
+};
+
+module.exports = userInquiryApi;

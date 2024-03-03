@@ -23,6 +23,7 @@ const youTubeApi = require("./apis/socialMediaApi/youTubeApi");
 const tiktokApi = require("./apis/socialMediaApi/tiktokApi");
 const snapChatApi = require("./apis/socialMediaApi/snapChatApi");
 const personalWebsiteApi = require("./apis/socialMediaApi/personalWebsiteApi");
+const userInquiryApi = require("./apis/userInquiryApi");
 
 const corsConfig = {
   origin: "*",
@@ -86,6 +87,10 @@ async function run() {
       .db("sunwings-smart-business-card")
       .collection("job-experiences");
 
+    const userInquiryCollection = client
+      .db("sunwings-smart-business-card")
+      .collection("user-inquiries");
+
     //collection end
 
     //APIs Start
@@ -117,6 +122,7 @@ async function run() {
     app.use("/users", tiktokApi(usersCollection));
     app.use("/users", snapChatApi(usersCollection));
     app.use("/users", personalWebsiteApi(usersCollection));
+    app.use("/email", userInquiryApi());
     //APIs End
 
     // Send a ping to confirm a successful connection
