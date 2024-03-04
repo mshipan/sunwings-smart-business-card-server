@@ -23,16 +23,20 @@ const userInquiryApi = (userInquiryCollection) => {
       from: email,
       to: process.env.Nodemailer_User,
       subject: subject,
-      text: `Name: ${name}\nEmail: ${email}\nMessage: ${message}`,
+      text: `Name: ${name}\nEmail: ${email}\n\nMessage: ${message}`,
     };
 
     transporter.sendMail(mailOptions, (error, info) => {
       if (error) {
         // console.error(error);
-        res.status(500).send("Error sending email");
+        res
+          .status(500)
+          .json({ success: false, message: "Error sending message" });
       } else {
         // console.log("Email sent: " + info.response);
-        res.status(200).send("Email sent successfully");
+        res
+          .status(200)
+          .json({ success: true, message: "Message sent successfully" });
       }
     });
   });
