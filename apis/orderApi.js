@@ -9,6 +9,14 @@ const orderApi = (ordersCollection) => {
     res.send(result);
   });
 
+  orderRouter.get("/", async (req, res) => {
+    const result = await ordersCollection
+      .find()
+      .sort({ createdAt: -1 })
+      .toArray();
+    res.send(result);
+  });
+
   return orderRouter;
 };
 module.exports = orderApi;
